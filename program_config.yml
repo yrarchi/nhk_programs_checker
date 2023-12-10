@@ -1,0 +1,9 @@
+service_ids:
+  - g1  # NHK総合1
+  - e1  # Eテレ1
+area: 130  # 東京
+num_days_to_check: 7
+program_titles_of_interest:  # use regular expressions
+  - 
+program_contents_of_interest:  # use regular expressions
+  - 

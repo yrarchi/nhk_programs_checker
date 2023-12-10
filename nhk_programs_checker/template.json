@@ -1,0 +1,50 @@
+[
+     {
+         "type": "section",
+         "text": {
+             "type": "plain_text",
+             "text": "NHK programs {{ target_term[0] }} ~ {{ target_term[1] }}"
+         }
+     },
+     {% if data %}
+         {% for item in data %}
+              {% set service_icon = 
+                  " :red_circle: " if item.service_id == "g1" 
+                  else " :large_green_circle: " if item.service_id == "e1" 
+                  else " :white_circle: " 
+               %}
+             {
+                 "type": "section",
+                 "text": {
+                     "type": "mrkdwn",
+                     "text": "*{{ item.title }}* {{ service_icon }} {{ item.start_time }}~"
+                 }
+             }
+             {% if item.subtitle != "" or item.content != "" %}
+                 ,{
+                     "type": "rich_text",
+                     "elements": [
+                         {
+                             "type": "rich_text_preformatted",
+                             "border": 0,
+                             "elements": [
+                                 {
+                                     "type": "text",
+                                     "text": "{{ item.subtitle }}\n{{ item.content }}"
+                                 }
+                             ]
+                         }
+                     ]
+                 }{% if not loop.last %},{% endif %}
+             {% endif %}
+         {% endfor %}
+     {% else %}
+         {
+             "type": "section",
+             "text": {
+                 "type": "plain_text",
+                 "text": "No matching program information."
+             }
+         }
+     {% endif %}
+]
