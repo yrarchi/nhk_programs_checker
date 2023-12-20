@@ -19,6 +19,7 @@ class ProgramChecker:
             program_config["program_contents_of_interest"]
             if program_config["program_contents_of_interest"] != [None] else []
         )
+        self.api_key = os.getenv("API_KEY")
 
     def check_programs(self):
         all_programs = []
@@ -32,7 +33,10 @@ class ProgramChecker:
         formatted_programs = [
             self._format_program_info(program) for program in programs_of_interest
         ]
-        return (target_term, formatted_programs)
+        target_programs = [
+            self._fetct_program_details(program) for program in formatted_programs
+        ]
+        return (target_term, target_programs)
 
     def _get_target_dates(self, today) -> list:
         first_target_date = today.strftime("%Y-%m-%d")
@@ -43,11 +47,10 @@ class ProgramChecker:
 
     def _fetch_programs_for_date(self, target_date) -> list:
         programs_for_date = []
-        api_key = os.getenv("API_KEY")
         for service_id in self.service_ids:
             api_endpoint = (
                 "https://api.nhk.or.jp/v2/pg/list/"
-                f"{self.area}/{service_id}/{target_date}.json?key={api_key}"
+                f"{self.area}/{service_id}/{target_date}.json?key={self.api_key}"
             )
             try:
                 response = requests.get(api_endpoint)
@@ -97,4 +100,19 @@ class ProgramChecker:
             "content": program["content"],
             "start_time": start_time,
             "service_id": program["service"]["id"],
+            "id": program["id"],
         }
+
+    def _fetct_program_details(self, program: dict) -> dict:
+        service_id = program["service_id"]
+        id = program["id"]
+        api_endpoint = (
+            "https://api.nhk.or.jp/v2/pg/info/"
+            f"{self.area}/{service_id}/{id}.json?key={self.api_key}"
+        )
+        response = requests.get(api_endpoint)
+        program_details = response.json()["list"][service_id][0]
+        for detail in ("program_url", "episode_url"):
+            if detail in program_details:
+                program[detail] = "https:" + program_details[detail]
+        return program
